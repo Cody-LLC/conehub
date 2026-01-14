@@ -1,5 +1,10 @@
+import React from 'react';
+import './App.css'
+
 function App() {
-  return <h1>Hello</h1>
+  return (
+    <div className="App">Hello world</div>
+  );
 }
 
-export default App
+export default App;
