@@ -1,9 +1,13 @@
 import React from 'react';
 import './App.css'
+import NavBar from './components/navbar.tsx'
+import './components/NavBar.css'
 
-function App() {
+const App: React.FC = () => {
   return (
-    <div className="App">Hello world</div>
+    <div className="App">
+      <NavBar />
+    </div>
   );
 }
 
