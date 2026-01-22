@@ -1,8 +1,10 @@
+import { BrowserRouter as BrowserRouter, Route, Routes } from 'react-router-dom';
 import React from 'react';
 import NavBar from './components/navbar.tsx'
-import { BrowserRouter as BrowserRouter, Route, Routes } from 'react-router-dom';
+import CQpage from './components/cq.tsx'
 import './App.css'
 import './components/NavBar.css'
+import './components/cq.css'
 
 const App: React.FC = () => {
   return (
@@ -19,8 +21,7 @@ const App: React.FC = () => {
             } />
             <Route path="/CQ" element={
               <div>
-                <h1>CQ Page</h1>
-                <p>Edit this content directly in App.jsx</p>
+                  <CQpage />
               </div>
             } />
             <Route path="/contacts" element={

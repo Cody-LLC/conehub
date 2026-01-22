@@ -1,0 +1,197 @@
+.cq-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0f1c 0%, #1a1f2e 100%);
+  color: #ffffff;
+  padding: 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+.cq-header {
+  text-align: center;
+  padding: 2rem 1rem;
+}
+
+.cq-header h1 {
+  font-size: 2.5rem;
+  margin: 0;
+  background: linear-gradient(90deg, #4cc9f0, #4361ee);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.tagline {
+  color: #a0aec0;
+  margin-top: 0.5rem;
+  font-size: 1rem;
+}
+
+.cq-main {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.checkin-card,
+.create-team-card {
+  background: rgba(30, 41, 59, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid #334155;
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.checkin-card h2,
+.create-team-card h2 {
+  margin: 0 0 1rem 0;
+  color: #ffffff;
+  font-size: 1.75rem;
+}
+
+.instructions {
+  color: #94a3b8;
+  margin-bottom: 2rem;
+  line-height: 1.5;
+}
+
+.form-section {
+  margin-bottom: 2rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.input-field {
+  width: 100%;
+  padding: 1rem;
+  background: #1e293b;
+  border: 2px solid #334155;
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 1rem;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #4cc9f0;
+  box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.1);
+}
+
+.input-field::placeholder {
+  color: #64748b;
+}
+
+.btn-primary,
+.btn-secondary {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.5rem;
+}
+
+.btn-primary {
+  background: linear-gradient(90deg, #4361ee, #3a0ca3);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(67, 97, 238, 0.3);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: #94a3b8;
+  border: 2px solid #334155;
+}
+
+.btn-secondary:hover {
+  border-color: #4cc9f0;
+  color: #4cc9f0;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 2rem 0;
+  color: #64748b;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #334155;
+}
+
+.divider span {
+  padding: 0 1rem;
+  font-size: 0.9rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.form-actions button {
+  flex: 1;
+}
+
+.cq-footer {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 480px) {
+  .cq-header h1 {
+    font-size: 2rem;
+  }
+  
+  .checkin-card,
+  .create-team-card {
+    padding: 1.5rem;
+    margin: 0 0 1.5rem 0;
+  }
+  
+  .input-field,
+  .btn-primary,
+  .btn-secondary {
+    padding: 0.875rem;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+}
