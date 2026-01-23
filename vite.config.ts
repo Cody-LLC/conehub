@@ -7,6 +7,12 @@ export default defineConfig({
   server: {
     host: true, // Listen on all addresses
     port: 3000, // Change if needed
+    allowedHosts: [
+      'conehub.org',
+      'duty.conehub.org',
+      'localhost',
+      '127.0.0.1'
+    ],
     strictPort: true,
   },
   build: {
