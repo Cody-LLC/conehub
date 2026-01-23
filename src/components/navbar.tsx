@@ -12,7 +12,7 @@ const Navbar = ({ title = "Conehub", links = [] }: NavbarProps) => {
   const defaultLinks = [
     { name: "Comic", path: "/comic" },
     { name: "CQ", path: "/CQ" },
-    { name: "Contacts", path: "/Contacts" },
+    { name: "Contacts", path: "/contacts" },
   ];
 
   const navLinks = links.length > 0 ? links : defaultLinks;
