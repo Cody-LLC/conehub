@@ -168,7 +168,7 @@ const CQPage: React.FC = () => {
           <div className="empty-state">
             <div className="empty-icon">📋</div>
             <h2>No Teams Yet</h2>
-            <p>Create your first team to start managing duty schedules</p>
+            <p>Create your first team to start</p>
             <button 
               className="create-first-btn"
               onClick={() => setShowCreateModal(true)}
