@@ -17,32 +17,62 @@ interface Team {
   id: string;
   name: string;
   lead_name: string;
-  password_hash: string;
-  created_at: string;
-}
-
-interface Member {
-  id: string;
-  team_id: string;
-  name: string;
-  last_duty_date?: string;
-  total_duties: number;
+  member_count?: number | null;
   created_at: string;
 }
 
 const CQPage: React.FC = () => {
   const navigate = useNavigate();
-  const [isCreatingTeam, setIsCreatingTeam] = useState(false);
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Create team form state
   const [teamName, setTeamName] = useState('');
   const [leadName, setLeadName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [existingTeamId, setExistingTeamId] = useState('');
-  const [existingPassword, setExistingPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState('');
 
-  // Hash password (simple client-side hash - for production use proper auth)
+  // Load teams on mount
+  useEffect(() => {
+    loadTeams();
+  }, []);
+
+  const loadTeams = async () => {
+    try {
+      // Get teams with member count
+      const { data: teamsData, error: teamsError } = await supabase
+        .from('teams')
+        .select('id, name, lead_name, created_at')
+        .order('created_at', { ascending: false });
+
+      if (teamsError) throw teamsError;
+
+      // Get member counts for each team
+      const teamsWithCounts = await Promise.all(
+        (teamsData || []).map(async (team) => {
+          const { count, error: countError } = await supabase
+            .from('Members')
+            .select('*', { count: 'exact', head: true })
+            .eq('team_id', team.id);
+
+          return {
+            ...team,
+            member_count: countError ? 0 : count
+          };
+        })
+      );
+
+      setTeams(teamsWithCounts);
+    } catch (error) {
+      console.error('Error loading teams:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const hashPassword = async (password: string): Promise<string> => {
     const encoder = new TextEncoder();
     const data = encoder.encode(password);
@@ -53,7 +83,7 @@ const CQPage: React.FC = () => {
 
   const handleCreateTeam = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setIsCreating(true);
     setError('');
 
     try {
@@ -89,240 +119,226 @@ const CQPage: React.FC = () => {
 
       if (teamError) throw teamError;
 
-      // Navigate to team dashboard
-      navigate(`/team/${teamId}`);
+      // Add to teams list
+      setTeams([{ ...teamData, member_count: 0 }, ...teams]);
+      
+      // Reset and close
+      setTeamName('');
+      setLeadName('');
+      setPassword('');
+      setConfirmPassword('');
+      setShowCreateModal(false);
+      
     } catch (err: any) {
       setError(err.message || 'Failed to create team');
       console.error('Create team error:', err);
     } finally {
-      setIsLoading(false);
+      setIsCreating(false);
     }
   };
 
-  const handleAccessTeam = async () => {
-    if (!existingTeamId || !existingPassword) {
-      setError('Please enter Team ID and Password');
-      return;
-    }
-
-    setIsLoading(true);
-    setError('');
-
-    try {
-      // Get team from Supabase
-      const { data: team, error: teamError } = await supabase
-        .from('teams')
-        .select('*')
-        .eq('id', existingTeamId)
-        .single();
-
-      if (teamError) throw new Error('Team not found');
-
-      // Hash provided password and compare
-      const providedHash = await hashPassword(existingPassword);
-      
-      if (team.password_hash !== providedHash) {
-        throw new Error('Invalid password');
-      }
-
-      // Navigate to team dashboard
-      navigate(`/team/${team.id}`);
-    } catch (err: any) {
-      setError(err.message || 'Invalid Team ID or Password');
-    } finally {
-      setIsLoading(false);
-    }
+  const handleTeamClick = (teamId: string) => {
+    navigate(`/team/${teamId}`);
   };
-
-  // Optional: Fetch recent teams for demo/showcase
-  const [recentTeams, setRecentTeams] = useState<Team[]>([]);
-  
-  useEffect(() => {
-    const fetchRecentTeams = async () => {
-      const { data } = await supabase
-        .from('teams')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(5);
-      
-      if (data) setRecentTeams(data);
-    };
-    
-    fetchRecentTeams();
-  }, []);
 
   return (
     <div className="cq-page">
+      {/* Header with Create Button */}
       <header className="cq-header">
-        <h1>Duty Scheduler</h1>
-        <p className="tagline">Team Duty Organization</p>
-        {error && (
-          <div className="error-message">
-            {error}
-            <button onClick={() => setError('')} className="close-error">×</button>
-          </div>
-        )}
+        <div className="header-left">
+          <h1 className="cq-title">Duty Scheduler</h1>
+          <p className="cq-subtitle">Select a team to manage duty assignments</p>
+        </div>
+        <button 
+          className="create-team-header-btn"
+          onClick={() => setShowCreateModal(true)}
+        >
+          <span className="plus-icon">+</span> Create Team
+        </button>
       </header>
 
+      {/* Main Content */}
       <main className="cq-main">
-        {!isCreatingTeam ? (
-          <div className="checkin-card">
-            <h2>Team Lead Check-In</h2>
-            <p className="instructions">
-              Create or access your team's duty schedule
-            </p>
-            
-            <div className="form-section">
-              <div className="form-group">
-                <label>Team ID</label>
-                <input
-                  type="text"
-                  value={existingTeamId}
-                  onChange={(e) => setExistingTeamId(e.target.value)}
-                  placeholder="Enter your Team ID"
-                  className="input-field"
-                  disabled={isLoading}
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Password</label>
-                <input
-                  type="password"
-                  value={existingPassword}
-                  onChange={(e) => setExistingPassword(e.target.value)}
-                  placeholder="Enter team password"
-                  className="input-field"
-                  disabled={isLoading}
-                />
-              </div>
-              
-              <button 
-                onClick={handleAccessTeam}
-                className="btn-primary"
-                disabled={!existingTeamId || !existingPassword || isLoading}
-              >
-                {isLoading ? 'Loading...' : 'Access Team'}
-              </button>
-            </div>
-            
-            <div className="divider">
-              <span>OR</span>
-            </div>
-            
+        {isLoading ? (
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading teams...</p>
+          </div>
+        ) : teams.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">📋</div>
+            <h2>No Teams Yet</h2>
+            <p>Create your first team to start managing duty schedules</p>
             <button 
-              onClick={() => setIsCreatingTeam(true)}
-              className="btn-secondary"
-              disabled={isLoading}
+              className="create-first-btn"
+              onClick={() => setShowCreateModal(true)}
             >
-              Create New Team
+              Create First Team
             </button>
-
-            {/* Recent Teams Preview */}
-            {recentTeams.length > 0 && (
-              <div className="recent-teams">
-                <h3>Recent Teams</h3>
-                <ul>
-                  {recentTeams.map(team => (
-                    <li key={team.id}>
-                      <strong>{team.name}</strong> • {team.lead_name}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
           </div>
         ) : (
-          <div className="create-team-card">
-            <h2>Create New Team</h2>
-            <p className="instructions">
-              Your team data will be securely stored in the cloud
-            </p>
-            
-            <form onSubmit={handleCreateTeam} className="create-team-form">
-              <div className="form-group">
-                <label>Team Name *</label>
-                <input
-                  type="text"
-                  value={teamName}
-                  onChange={(e) => setTeamName(e.target.value)}
-                  placeholder="e.g., Alpha Shift, Bravo Team"
-                  className="input-field"
-                  required
-                  autoFocus
-                  disabled={isLoading}
-                />
+          <div className="teams-grid">
+            {teams.map((team) => (
+              <div 
+                key={team.id} 
+                className="team-card"
+                onClick={() => handleTeamClick(team.id)}
+              >
+                <div className="team-card-header">
+                  <div className="team-name-section">
+                    <h3 className="team-name">{team.name}</h3>
+                    <div className="member-badge">
+                      {team.member_count || 0} members
+                    </div>
+                  </div>
+                  <div className="team-status active">Active</div>
+                </div>
+                
+                <div className="team-card-body">
+                  <div className="team-info-item">
+                    <span className="info-label">Lead:</span>
+                    <span className="info-value">{team.lead_name}</span>
+                  </div>
+                  <div className="team-info-item">
+                    <span className="info-label">Created:</span>
+                    <span className="info-value">
+                      {new Date(team.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="team-card-footer">
+                  <button 
+                    className="access-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleTeamClick(team.id);
+                    }}
+                  >
+                    Access Team
+                  </button>
+                </div>
               </div>
-              
-              <div className="form-group">
-                <label>Your Name (Team Lead) *</label>
-                <input
-                  type="text"
-                  value={leadName}
-                  onChange={(e) => setLeadName(e.target.value)}
-                  placeholder="Your name"
-                  className="input-field"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
-              
-              <div className="form-group">
-                <label>Create Password *</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="input-field"
-                  required
-                  minLength={4}
-                  placeholder="At least 4 characters"
-                  disabled={isLoading}
-                />
-                <small>This password will be securely hashed</small>
-              </div>
-              
-              <div className="form-group">
-                <label>Confirm Password *</label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="input-field"
-                  required
-                  minLength={4}
-                  placeholder="Confirm your password"
-                  disabled={isLoading}
-                />
-              </div>
-              
-              <div className="form-actions">
-                <button 
-                  type="button" 
-                  className="btn-secondary"
-                  onClick={() => setIsCreatingTeam(false)}
-                  disabled={isLoading}
-                >
-                  Back
-                </button>
-                <button 
-                  type="submit" 
-                  className="btn-primary"
-                  disabled={!teamName || !leadName || !password || !confirmPassword || isLoading}
-                >
-                  {isLoading ? 'Creating...' : 'Create Team'}
-                </button>
-              </div>
-            </form>
+            ))}
           </div>
         )}
       </main>
-      
+
+      {/* Create Team Modal */}
+      {showCreateModal && (
+        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Create New Team</h2>
+              <button 
+                className="modal-close-btn"
+                onClick={() => setShowCreateModal(false)}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="modal-body">
+              {error && (
+                <div className="modal-error">
+                  {error}
+                  <button 
+                    onClick={() => setError('')}
+                    className="error-close"
+                  >
+                    ×
+                  </button>
+                </div>
+              )}
+              
+              <form onSubmit={handleCreateTeam} className="modal-form">
+                <div className="form-group">
+                  <label htmlFor="teamName">Team Name *</label>
+                  <input
+                    id="teamName"
+                    type="text"
+                    value={teamName}
+                    onChange={(e) => setTeamName(e.target.value)}
+                    placeholder="e.g., Alpha Shift, Bravo Team"
+                    required
+                    autoFocus
+                    disabled={isCreating}
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="leadName">Your Name (Team Lead) *</label>
+                  <input
+                    id="leadName"
+                    type="text"
+                    value={leadName}
+                    onChange={(e) => setLeadName(e.target.value)}
+                    placeholder="Your name"
+                    required
+                    disabled={isCreating}
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="password">Create Password *</label>
+                  <input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="At least 4 characters"
+                    required
+                    minLength={4}
+                    disabled={isCreating}
+                  />
+                  <small className="field-hint">This password will be securely hashed</small>
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="confirmPassword">Confirm Password *</label>
+                  <input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm your password"
+                    required
+                    minLength={4}
+                    disabled={isCreating}
+                  />
+                </div>
+                
+                <div className="form-actions">
+                  <button 
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => setShowCreateModal(false)}
+                    disabled={isCreating}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit"
+                    className="btn-primary"
+                    disabled={!teamName || !leadName || !password || !confirmPassword || isCreating}
+                  >
+                    {isCreating ? (
+                      <>
+                        <span className="spinner"></span>
+                        Creating...
+                      </>
+                    ) : 'Create Team'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
       <footer className="cq-footer">
         <p>Data securely stored in Supabase database</p>
-        <p className="supabase-info">
-          Connected to: {supabaseUrl?.replace('https://', '').split('.')[0]}
-        </p>
       </footer>
     </div>
   );
