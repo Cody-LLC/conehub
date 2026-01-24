@@ -146,15 +146,9 @@ const CQPage: React.FC = () => {
       {/* Header with Create Button */}
       <header className="cq-header">
         <div className="header-left">
-          <h1 className="cq-title">Duty Scheduler</h1>
-          <p className="cq-subtitle">Select a team to manage duty assignments</p>
+          <h1 className="cq-title">CQ Weekly Schedule</h1>
+          <p className="cq-subtitle">Select your team to see the schedule</p>
         </div>
-        <button 
-          className="create-team-header-btn"
-          onClick={() => setShowCreateModal(true)}
-        >
-          <span className="plus-icon">+</span> Create Team
-        </button>
       </header>
 
       {/* Main Content */}

@@ -2,6 +2,7 @@ import { BrowserRouter as BrowserRouter, Route, Routes } from 'react-router-dom'
 import React from 'react';
 import NavBar from './components/navbar.tsx'
 import CQpage from './components/cq.tsx'
+import Home from './components/home.tsx'
 import './App.css'
 import './components/NavBar.css'
 import './components/cq.css'
@@ -13,6 +14,11 @@ const App: React.FC = () => {
         <NavBar />
         <main className="main-content">
           <Routes>
+            <Route path='/' element={
+              <div>
+                <Home />
+              </div>
+            } />
             <Route path="/comic" element={
               <div>
                 <h1>Comic Page</h1>
