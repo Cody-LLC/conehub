@@ -57,23 +57,68 @@ body {
 /* Teams List */
 .teams-list {
   display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 15px;
+  margin-top: 25px;
 }
 
 .team-item {
-  background: #2a2a2a;
-  padding: 15px;
-  border-radius: 6px;
-  border: 1px solid #333;
+  background: rgb(170, 170, 170);
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 1px solid #bebebe;
+  height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
+.team-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  border-color: #667eea;
+}
+
+/* Team name - clean */
 .team-item h3 {
-  margin-bottom: 5px;
+  margin: 0 0 6px 0;
+  color: #2d3748;
+  font-size: 1.2rem;
+  font-weight: 600;
 }
 
+/* Team ID - simple */
 .team-item p {
-  color: #888;
+  margin: 0 0 12px 0;
+  color: #718096;
   font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Clean View Button */
+.team-button {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.team-button:hover {
+  background: #5a6fd8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.team-button:active {
+  transform: translateY(0);
 }
 
 /* Empty State */

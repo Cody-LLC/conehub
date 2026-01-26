@@ -28,8 +28,7 @@ const CQPage: React.FC = () => {
     try {
       const { data, error } = await supabase
         .from('teams')
-        .select('name');
-      
+        .select('id, name');
       if (error) throw error;
       setTeams(data || []);
     } catch (err) {
@@ -38,22 +37,17 @@ const CQPage: React.FC = () => {
       setLoading(false);
     }
   };
-
   // Create team - SIMPLE VERSION
   const handleCreateTeam = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validate
     if (password !== confirmPassword) {
       setError('Passwords do not match!');
       return;
     }
-    
     if (password.length < 4) {
       setError('Password must be at least 4 characters');
       return;
     }
-
     try {
       const { data, error } = await supabase
         .from('teams')
@@ -63,21 +57,33 @@ const CQPage: React.FC = () => {
         }])
         .select()
         .single();
-      
       if (error) throw error;
-      
-      // Add to list
-      setTeams([data, ...teams]);
-      
-      // Reset and close
-      setTeamName('');
-      setPassword('');
-      setConfirmPassword('');
-      setShowModal(false);
-      setError('');
+        setTeams([data, ...teams]);
+        setTeamName('');
+        setPassword('');
+        setConfirmPassword('');
+        setShowModal(false);
+        setError('');
       
     } catch (err: any) {
       setError(err.message || 'Failed to create team');
+    }
+  };
+  const deleteTeam = async (teamId: number) => {
+    if (!window.confirm('Are you sure you want to delete this team?')) {
+      return;
+    }
+    try {      // 2. Call Supabase to delete
+      const { error } = await supabase
+        .from('teams')
+        .delete()
+        .eq('id', teamId); // Delete by ID
+      if (error) throw error;
+      setTeams(prevTeams => prevTeams.filter(team => team.id !== teamId));
+      alert('Team deleted successfully!');
+    } catch (err: any) {
+      console.error('Delete error:', err);
+      alert(`Failed to delete team: ${err.message}`);
     }
   };
 
@@ -111,10 +117,11 @@ const CQPage: React.FC = () => {
         ) : (
           <div className="teams-list">
             {teams.map((team) => (
-              <div key={team.id} className="team-item">
-                <h3>{team.name}</h3>
-                <p>ID: {team.id}</p>
-              </div>
+                <div key={team.id} className="team-item" onClick={() => console.log('Clicked team:', team.id)}>
+                  <h3>{team.name}</h3>
+                  <p>ID: {team.id}</p>
+                  <button className="team-button">View</button>
+                </div>
             ))}
           </div>
         )}
