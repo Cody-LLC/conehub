@@ -12,8 +12,9 @@ const CQPage: React.FC = () => {
   const [teams, setTeams] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  
-  // Form state - ONLY 3 fields
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState<any>(null);
+  // Form state
   const [teamName, setTeamName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -37,7 +38,8 @@ const CQPage: React.FC = () => {
       setLoading(false);
     }
   };
-  // Create team - SIMPLE VERSION
+
+  // Create team
   const handleCreateTeam = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) {
@@ -53,38 +55,41 @@ const CQPage: React.FC = () => {
         .from('teams')
         .insert([{
           name: teamName,
-          password: password  // ← Plain text password!
+          password: password
         }])
         .select()
         .single();
       if (error) throw error;
-        setTeams([data, ...teams]);
-        setTeamName('');
-        setPassword('');
-        setConfirmPassword('');
-        setShowModal(false);
-        setError('');
-      
+      setTeams([data, ...teams]);
+      setTeamName('');
+      setPassword('');
+      setConfirmPassword('');
+      setShowModal(false);
+      setError('');
     } catch (err: any) {
       setError(err.message || 'Failed to create team');
     }
   };
+
+  // Delete team function
   const deleteTeam = async (teamId: number) => {
-    if (!window.confirm('Are you sure you want to delete this team?')) {
-      return;
-    }
-    try {      // 2. Call Supabase to delete
+    try {
       const { error } = await supabase
         .from('teams')
         .delete()
-        .eq('id', teamId); // Delete by ID
+        .eq('id', teamId);
       if (error) throw error;
       setTeams(prevTeams => prevTeams.filter(team => team.id !== teamId));
-      alert('Team deleted successfully!');
+      setShowScheduleModal(false);
+      alert('✅ Team deleted successfully!');
     } catch (err: any) {
-      console.error('Delete error:', err);
-      alert(`Failed to delete team: ${err.message}`);
+      alert(`❌ Failed to delete team: ${err.message}`);
     }
+  };
+
+  const handleViewClick = (team: any) => {
+    setSelectedTeam(team);
+    setShowScheduleModal(true);
   };
 
   return (
@@ -100,7 +105,7 @@ const CQPage: React.FC = () => {
         {/* CREATE TEAM BUTTON */}
         <div className="create-button-container">
           <button 
-            className="create-team-btn"
+            className="btn btn-primary create-team-btn"
             onClick={() => setShowModal(true)}
           >
             Create New Team
@@ -117,79 +122,170 @@ const CQPage: React.FC = () => {
         ) : (
           <div className="teams-list">
             {teams.map((team) => (
-                <div key={team.id} className="team-item" onClick={() => console.log('Clicked team:', team.id)}>
-                  <h3>{team.name}</h3>
-                  <p>ID: {team.id}</p>
-                  <button className="team-button">View</button>
-                </div>
+              <div key={team.id} className="team-item">
+                <h3>{team.name}</h3>
+                <p>ID: {team.id}</p>
+                <button 
+                  className="btn btn-primary team-button"
+                  onClick={() => handleViewClick(team)}
+                >
+                  View
+                </button>
+              </div>
             ))}
           </div>
         )}
       </main>
 
-      {/* MODAL - Only 3 fields */}
+      {/* CREATE TEAM MODAL */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Create Team</h2>
+          <div className="modal create-modal" onClick={(e) => e.stopPropagation()}>
             
-            {error && <div className="error-message">{error}</div>}
+            {/* Modal Header */}
+            <div className="create-modal-header">
+              <h2>Create New Team</h2>
+              <button 
+                className="modal-close-btn"
+                onClick={() => setShowModal(false)}
+              >
+                ×
+              </button>
+            </div>
             
-            <form onSubmit={handleCreateTeam}>
-              {/* Field 1: Team Name */}
+            {/* Error Message */}
+            {error && (
+              <div className="error-message">
+                <span>⚠️</span> {error}
+              </div>
+            )}
+            
+            {/* Form */}
+            <form onSubmit={handleCreateTeam} className="create-form">
               <div className="form-group">
-                <label>Team Name</label>
+                <label className="form-label">Team Name</label>
                 <input
                   type="text"
                   value={teamName}
                   onChange={(e) => setTeamName(e.target.value)}
-                  placeholder="Team name"
+                  placeholder="Enter team name"
+                  className="form-input"
                   required
                 />
               </div>
               
-              {/* Field 2: Password */}
               <div className="form-group">
-                <label>Password</label>
+                <label className="form-label">Password</label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Min 4 characters"
+                  placeholder="Minimum 4 characters"
+                  className="form-input"
                   required
                   minLength={4}
                 />
               </div>
               
-              {/* Field 3: Confirm Password */}
               <div className="form-group">
-                <label>Confirm Password</label>
+                <label className="form-label">Confirm Password</label>
                 <input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm password"
+                  placeholder="Re-enter password"
+                  className="form-input"
                   required
                 />
               </div>
               
               {/* Buttons */}
-              <div className="modal-buttons">
+              <div className="form-buttons">
                 <button 
                   type="button" 
+                  className="btn btn-secondary"
                   onClick={() => setShowModal(false)}
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit"
+                  className="btn btn-primary"
                   disabled={!teamName || !password || !confirmPassword}
                 >
                   Create Team
                 </button>
               </div>
             </form>
+            
           </div>
+        </div>
+      )}
+
+      {/* SCHEDULE OVERLAY */}
+      {showScheduleModal && selectedTeam && (
+        <div className="schedule-overlay">
+          <div className="schedule-header">
+            <div className="header-left">
+              <h1 className="schedule-title">{selectedTeam.name}</h1>
+              <p className="schedule-subtitle">Team ID: {selectedTeam.id}</p>
+            </div>
+            <div className='header-buttons'>
+              <button 
+                className="btn btn-secondary"
+                onClick={() => setShowScheduleModal(false)}
+              >
+                ← Back to Teams
+              </button>
+
+              <button 
+                className="btn btn-danger"
+                onClick={() => {
+                  if (confirm(`Delete team "${selectedTeam.name}"?`)) {
+                    deleteTeam(selectedTeam.id);
+                  }
+                }}
+              >
+                Delete Team
+              </button>
+            </div>
+          </div>
+          
+          {/* Main Schedule Grid */}
+          <div className="schedule-main">
+            <div className="compact-grid">
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                <div key={day} className="day-column">
+                  <div className="day-header">
+                    <h3>{day}</h3>
+                  </div>
+                  
+                  {/* 3 Shifts per day */}
+                  <div className="compact-shifts">
+                    <div className="compact-shift">
+                      <div className="shift-time">00-08</div>
+                    </div>
+                    
+                    <div className="compact-shift">
+                      <div className="shift-time">08-16</div>
+                    </div>
+                    
+                    <div className="compact-shift">
+                      <div className="shift-time">16-00</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Footer */}
+          <div className="schedule-footer">
+            <button className="btn btn-primary save-button">
+              Save Schedule
+            </button>
+          </div>
+          
         </div>
       )}
     </div>
