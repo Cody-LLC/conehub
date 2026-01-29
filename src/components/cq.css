@@ -34,7 +34,13 @@ body {
   color: #aaa;
 }
 
-/* ===== UNIFIED BUTTON SYSTEM ===== */
+/*
+
+
+===== UNIFIED BUTTON SYSTEM ===== 
+
+
+*/
 .btn {
   padding: 10px 20px;
   border-radius: 8px;
@@ -47,16 +53,26 @@ body {
 }
 
 .btn-primary {
-  background: #3b82f6;
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: #667eea;
   color: white;
+  text-decoration: none;
+  border-radius: 50px;
+  font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 .btn-primary:hover {
-  background: #2563eb;
+  background: #5a6fd8;
   transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
 }
 
 .btn-danger {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
   background: #dc3545;
   color: white;
 }
@@ -67,6 +83,9 @@ body {
 }
 
 .btn-secondary {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border-radius: 50px;
   background: #6c757d;
   color: white;
 }
@@ -76,7 +95,13 @@ body {
   transform: translateY(-2px);
 }
 
-/* Specific button styles */
+/* 
+
+
+Specific button styles 
+
+
+*/
 .create-team-btn {
   font-size: 1.1rem;
   padding: 12px 30px;
@@ -141,7 +166,13 @@ body {
   color: #666;
 }
 
-/* ===== MODALS ===== */
+/* 
+
+
+===== MODALS ===== 
+
+
+*/
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -258,7 +289,13 @@ body {
   border: 1px solid rgba(220, 53, 69, 0.3);
 }
 
-/* ===== SCHEDULE OVERLAY ===== */
+/* 
+
+
+===== SCHEDULE OVERLAY 
+
+
+===== */
 .schedule-overlay {
   position: fixed;
   top: 0;

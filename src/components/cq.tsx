@@ -12,8 +12,8 @@ const CQPage: React.FC = () => {
   const [teams, setTeams] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<any>(null);
+  const [editTeam, setEditTeam] = useState(false);
   // Form state
   const [teamName, setTeamName] = useState('');
   const [password, setPassword] = useState('');
@@ -80,18 +80,37 @@ const CQPage: React.FC = () => {
         .eq('id', teamId);
       if (error) throw error;
       setTeams(prevTeams => prevTeams.filter(team => team.id !== teamId));
-      setShowScheduleModal(false);
       alert('✅ Team deleted successfully!');
+      setEditTeam(false)
+      setSelectedTeam(false)
     } catch (err: any) {
       alert(`❌ Failed to delete team: ${err.message}`);
     }
   };
-
-  const handleViewClick = (team: any) => {
-    setSelectedTeam(team);
-    setShowScheduleModal(true);
-  };
-
+const checkPassword = async (enteredPassword: string) => {
+  try {
+    // Get the team's real password from database
+    const { data: teamData, error } = await supabase
+      .from('teams')
+      .select('password')
+      .eq('id', selectedTeam.id)
+      .single();
+    
+    if (error) throw error;
+    
+    // Compare passwords
+    if (teamData.password === enteredPassword) {
+      // Password correct - open edit UI
+      setEditTeam(true);
+    } else {
+      // Password wrong - show error
+      alert('❌ Wrong password!');
+    }
+    
+  } catch (err: any) {
+    alert(`Error: ${err.message}`);
+  }
+};
   return (
     <div className="cq-page">
       {/* Header */}
@@ -127,7 +146,7 @@ const CQPage: React.FC = () => {
                 <p>ID: {team.id}</p>
                 <button 
                   className="btn btn-primary team-button"
-                  onClick={() => handleViewClick(team)}
+                  onClick={() => setSelectedTeam(team)}
                 >
                   View
                 </button>
@@ -223,7 +242,7 @@ const CQPage: React.FC = () => {
       )}
 
       {/* SCHEDULE OVERLAY */}
-      {showScheduleModal && selectedTeam && (
+      {selectedTeam && (
         <div className="schedule-overlay">
           <div className="schedule-header">
             <div className="header-left">
@@ -233,20 +252,19 @@ const CQPage: React.FC = () => {
             <div className='header-buttons'>
               <button 
                 className="btn btn-secondary"
-                onClick={() => setShowScheduleModal(false)}
-              >
+                onClick={() => setSelectedTeam(null)}>
                 ← Back to Teams
               </button>
 
               <button 
-                className="btn btn-danger"
+                className="btn btn-primary"
                 onClick={() => {
-                  if (confirm(`Delete team "${selectedTeam.name}"?`)) {
-                    deleteTeam(selectedTeam.id);
+                  const password = prompt(`Enter password for "${selectedTeam.name}":`);
+                  if (password) {
+                    checkPassword(password);
                   }
-                }}
-              >
-                Delete Team
+                  ;}}>
+                Edit
               </button>
             </div>
           </div>
@@ -278,16 +296,52 @@ const CQPage: React.FC = () => {
               ))}
             </div>
           </div>
-          
-          {/* Footer */}
-          <div className="schedule-footer">
-            <button className="btn btn-primary save-button">
-              Save Schedule
-            </button>
-          </div>
-          
         </div>
       )}
+        {editTeam && (
+          <div className="schedule-overlay">
+            <div className="schedule-header">
+              <div className="header-left">
+                <h1 className="schedule-title">✏️ Edit {selectedTeam.name}</h1>
+                <p className="schedule-subtitle">Team ID: {selectedTeam.id}</p>
+              </div>
+              <div className='header-buttons'>
+                <button 
+                  className="btn btn-secondary"
+                  onClick={() => setEditTeam(false)}
+                >
+                  ← Back to Schedule
+                </button>
+                
+                <button 
+                  className="btn btn-danger"
+                  onClick={() => {
+                    if (confirm(`Delete ${selectedTeam.name}?`)) {
+                      deleteTeam(selectedTeam.id);
+                    }
+                  }}
+                >
+                  🗑️ Delete Team
+                </button>
+              </div>
+            </div>
+            
+              <div className="edit-sections">
+                <div className="edit-section">
+                  <h2>👥 Team Members</h2>
+                  <div className="members-list">
+                    <p>No members yet</p>
+                  </div>
+                  <button className="btn btn-primary">
+                    + Add Member
+                  </button>
+                </div>
+                <div className="edit-section">
+                  <h2>📅 Assign Members</h2>    
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   );
 };
