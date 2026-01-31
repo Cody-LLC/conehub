@@ -117,8 +117,13 @@ Specific button styles
   font-size: 1.1rem;
   font-weight: 600;
 }
+/* 
 
-/* Teams List */
+
+Teams List 
+
+
+*/
 .teams-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -237,12 +242,26 @@ Specific button styles
   align-items: center;
   justify-content: center;
 }
-
+.form-main {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 20px;
+  padding: 20px;
+  width: 350px;
+  max-width: 95%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1001;
+}
 .create-form {
   padding: 30px;
   background: rgba(255, 255, 255, 0.05);
 }
-
 .form-label {
   display: block;
   margin-bottom: 8px;

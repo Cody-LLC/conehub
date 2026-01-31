@@ -12,13 +12,16 @@ const CQPage: React.FC = () => {
   const [teams, setTeams] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [formSubmit, setFormSubmit] = useState<(text: string) => void>(() => {});
+  const [inputForm, setInputForm] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<any>(null);
-  const [editTeam, setEditTeam] = useState(false);
+  const [selectedTeam2, setSelectedTeam2] = useState<any>(null);
   // Form state
   const [teamName, setTeamName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [oneForm, setOneForm] = useState('');
 
   // Load teams
   useEffect(() => {
@@ -81,7 +84,7 @@ const CQPage: React.FC = () => {
       if (error) throw error;
       setTeams(prevTeams => prevTeams.filter(team => team.id !== teamId));
       alert('✅ Team deleted successfully!');
-      setEditTeam(false)
+      setSelectedTeam2(false)
       setSelectedTeam(false)
     } catch (err: any) {
       alert(`❌ Failed to delete team: ${err.message}`);
@@ -95,13 +98,13 @@ const checkPassword = async (enteredPassword: string) => {
       .select('password')
       .eq('id', selectedTeam.id)
       .single();
-    
+
     if (error) throw error;
     
     // Compare passwords
     if (teamData.password === enteredPassword) {
       // Password correct - open edit UI
-      setEditTeam(true);
+      setSelectedTeam2(true);
     } else {
       // Password wrong - show error
       alert('❌ Wrong password!');
@@ -259,11 +262,11 @@ const checkPassword = async (enteredPassword: string) => {
               <button 
                 className="btn btn-primary"
                 onClick={() => {
-                  const password = prompt(`Enter password for "${selectedTeam.name}":`);
-                  if (password) {
-                    checkPassword(password);
-                  }
-                  ;}}>
+                  setInputForm(true);
+                  setFormSubmit(() => (text: string) => {
+                    checkPassword(text);
+                  });
+                  }}>
                 Edit
               </button>
             </div>
@@ -298,22 +301,26 @@ const checkPassword = async (enteredPassword: string) => {
           </div>
         </div>
       )}
-        {editTeam && (
-          <div className="schedule-overlay">
-            <div className="schedule-header">
-              <div className="header-left">
-                <h1 className="schedule-title">✏️ Edit {selectedTeam.name}</h1>
-                <p className="schedule-subtitle">Team ID: {selectedTeam.id}</p>
-              </div>
-              <div className='header-buttons'>
-                <button 
-                  className="btn btn-secondary"
-                  onClick={() => setEditTeam(false)}
-                >
-                  ← Back to Schedule
-                </button>
-                
-                <button 
+        {selectedTeam2 && (
+        <div className="schedule-overlay">
+          <div className="schedule-header">
+            <div className="header-left">
+              <h1 className="schedule-title">{selectedTeam.name}</h1>
+              <p className="schedule-subtitle">Team ID: {selectedTeam.id}</p>
+            </div>
+            <div className='header-buttons'>
+              <button 
+                className="btn btn-secondary"
+                onClick={() => setSelectedTeam2(null)}>
+                ← Back
+              </button>
+              <button 
+                className="btn btn-primary"
+                onClick={() => {
+                  setInputForm(true);}}>
+                Add Cone
+              </button>
+              <button 
                   className="btn btn-danger"
                   onClick={() => {
                     if (confirm(`Delete ${selectedTeam.name}?`)) {
@@ -321,24 +328,72 @@ const checkPassword = async (enteredPassword: string) => {
                     }
                   }}
                 >
-                  🗑️ Delete Team
-                </button>
-              </div>
+                  Delete
+              </button>
             </div>
-            
-              <div className="edit-sections">
-                <div className="edit-section">
-                  <h2>👥 Team Members</h2>
-                  <div className="members-list">
-                    <p>No members yet</p>
+          </div>
+          
+          {/* Main Schedule Grid */}
+          <div className="schedule-main">
+            <div className="compact-grid">
+              {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                <div key={day} className="day-column">
+                  <div className="day-header">
+                    <h3>{day}</h3>
                   </div>
-                  <button className="btn btn-primary">
-                    + Add Member
-                  </button>
+                  
+                  {/* 3 Shifts per day */}
+                  <div className="compact-shifts">
+                    <div className="compact-shift">
+                      <div className="shift-time">00-08</div>
+                    </div>
+                    
+                    <div className="compact-shift">
+                      <div className="shift-time">08-16</div>
+                    </div>
+                    
+                    <div className="compact-shift">
+                      <div className="shift-time">16-00</div>
+                    </div>
+                  </div>
                 </div>
-                <div className="edit-section">
-                  <h2>📅 Assign Members</h2>    
-              </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {inputForm && (
+          <div className="form-main" style={{marginTop: '10px'}}>
+              <input
+                type="text"
+                value={oneForm}
+                onChange={(e) => setOneForm(e.target.value)}
+                placeholder="Enter text"
+                className="form-input"
+              />
+            <div className="form-buttons">
+              <button 
+                className="btn btn-primary"
+                onClick={() => {
+                  if (oneForm.trim()) {
+                    formSubmit(oneForm);
+                    setOneForm('')
+                    setInputForm(false);
+                  }
+                }}
+              >
+                Submit
+              </button>
+              <button 
+                className="btn btn-secondary"
+                onClick={() => {
+                  setOneForm('');
+                  setInputForm(false);
+                }}
+              >
+                Cancel
+              </button>
             </div>
           </div>
         )}
