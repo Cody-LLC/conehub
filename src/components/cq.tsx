@@ -77,17 +77,31 @@ const CQPage: React.FC = () => {
   // Delete team function
   const deleteTeam = async (teamId: number) => {
     try {
-      const { error } = await supabase
+      // 1. DELETE ALL MEMBERS of this team FIRST
+      const { error: membersError } = await supabase
+        .from('members')
+        .delete()
+        .eq('team_id', teamId);  // team_id is the column name
+      
+      if (membersError) throw membersError;
+      
+      // 2. Then delete the team itself
+      const { error: teamError } = await supabase
         .from('teams')
         .delete()
         .eq('id', teamId);
-      if (error) throw error;
+      
+      if (teamError) throw teamError;
+      
+      // 3. Update UI state
       setTeams(prevTeams => prevTeams.filter(team => team.id !== teamId));
-      alert('✅ Team deleted successfully!');
-      setSelectedTeam2(false)
-      setSelectedTeam(false)
+      setSelectedTeam2(false);
+      setSelectedTeam(null);
+      
+      alert('✅ Team and all members deleted successfully!');
+      
     } catch (err: any) {
-      alert(`❌ Failed to delete team: ${err.message}`);
+      alert(`❌ Failed to delete: ${err.message}`);
     }
   };
   const checkPassword = async (enteredPassword: string) => {
@@ -394,7 +408,9 @@ const CQPage: React.FC = () => {
               ))}
             </div>
           </div>
-          <h1>test</h1>
+            <div className="members-grid">
+              <h1>test</h1>
+            </div>
         </div>
       )}
 
