@@ -16,6 +16,8 @@ const CQPage: React.FC = () => {
   const [inputForm, setInputForm] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<any>(null);
   const [selectedTeam2, setSelectedTeam2] = useState<any>(null);
+  const [members, setMembers] = useState<any[]>([]);
+  const [loadingMembers, setLoadingMembers] = useState(false);
   // Form state
   const [teamName, setTeamName] = useState('');
   const [password, setPassword] = useState('');
@@ -27,7 +29,11 @@ const CQPage: React.FC = () => {
   useEffect(() => {
     loadTeams();
   }, []);
-
+  useEffect(() => {
+    if (selectedTeam2) { // When edit mode is active
+      loadMembers();
+    }
+}, [selectedTeam2]);
   const loadTeams = async () => {
     try {
       const { data, error } = await supabase
@@ -41,7 +47,6 @@ const CQPage: React.FC = () => {
       setLoading(false);
     }
   };
-
   // Create team
   const handleCreateTeam = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -135,7 +140,7 @@ const CQPage: React.FC = () => {
         alert('❌ No team selected!');
         return;
       }
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('members')  // Your table name
         .insert([{
           name: coneName.trim(),
@@ -148,14 +153,42 @@ const CQPage: React.FC = () => {
       if (error) throw error;
 
       alert(`✅ Added "${coneName}" to ${selectedTeam.name}!`);
-      console.log('Added cone:', data);
-
-      // Optional: Refresh or update state if you're displaying members
-      // loadMembers(); // You might want to create this function
-
+      await loadMembers();
     } catch (err: any) {
       alert(`❌ Failed to add cone: ${err.message}`);
       console.error('Add cone error:', err);
+    }
+  };
+  const loadMembers = async () => {
+    if (!selectedTeam?.id) return;
+    
+    setLoadingMembers(true);
+    const { data, error } = await supabase
+      .from('members')
+      .select('*')
+      .eq('team_id', selectedTeam.id);
+    
+    if (error) console.error('Load members error:', error);
+    setMembers(data || []);
+    setLoadingMembers(false);
+  };
+  const deleteMember = async (memberId: number) => {
+    if (!confirm('Delete this member?')) return;
+    
+    try {
+      const { error } = await supabase
+        .from('members')
+        .delete()
+        .eq('id', memberId);
+      
+      if (error) throw error;
+      
+      // Remove from local state
+      setMembers(prev => prev.filter(m => m.id !== memberId));
+      
+      alert('✅ Member deleted!');
+    } catch (err: any) {
+      alert(`❌ Failed to delete: ${err.message}`);
     }
   };
   return (
@@ -409,7 +442,25 @@ const CQPage: React.FC = () => {
             </div>
           </div>
             <div className="members-grid">
-              <h1>test</h1>
+              {loadingMembers ? (
+                <p className="loading-text">Loading members...</p>
+              ) : members.length === 0 ? (
+                <p className="empty-text">No members yet. Add one with "Add Cone"!</p>
+              ) : (
+                <div className="members-list">
+                  {members.map((member) => (
+                    <div key={member.id} className="member-item">
+                      <span className="member-name">{member.name}</span>
+                      <button 
+                        className="btn btn-danger member-delete-btn"
+                        onClick={() => deleteMember(member.id)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                )}
             </div>
         </div>
       )}
@@ -447,7 +498,7 @@ const CQPage: React.FC = () => {
               </button>
             </div>
           </div>
-        )}
+      )}
     </div>
   );
 };

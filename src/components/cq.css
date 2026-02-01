@@ -424,6 +424,70 @@ Teams List
   position: sticky;
   bottom: 0;
 }
+/* 
+
+
+Admin Schedule
+
+
+===== */
+.member-item {
+  background: #0f172a;
+  border: 1px solid #475569;
+  border-radius: 20px; /* Makes it pill-shaped */
+  padding: 8px 15px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 5px;
+  transition: all 0.2s;
+}
+
+.member-item:hover {
+  border-color: #38bdf8;
+  transform: translateY(-2px);
+}
+
+.member-name {
+  color: white;
+  font-weight: 500;
+}
+
+.member-delete-btn {
+  background: transparent;
+  border: 1px solid #dc3545;
+  color: #dc3545;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+  min-width: 24px;
+}
+
+.member-delete-btn:hover {
+  background: #dc3545;
+  color: white;
+}
+
+/* Make the list wrap and center */
+.members-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+.loading-text,
+.empty-text {
+  text-align: center;
+  width: 100%;
+  padding: 20px;
+  color: #94a3b8;
+}
 
 /* Responsive */
 @media (max-width: 1024px) {
