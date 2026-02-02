@@ -191,6 +191,7 @@ const CQPage: React.FC = () => {
       alert(`❌ Failed to delete: ${err.message}`);
     }
   };
+  
   return (
     <div className="cq-page">
       {/* Header */}
