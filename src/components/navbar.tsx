@@ -10,9 +10,9 @@ const Navbar = ({ title = "Conehub", links = [] }: NavbarProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const defaultLinks = [
-    { name: "Comic", path: "/comic" },
+    { name: "Cone News", path: "/cone-news" },
     { name: "CQ", path: "/CQ" },
-    { name: "Contacts", path: "/contacts" },
+    { name: "Comic", path: "/comic" },
   ];
 
   const navLinks = links.length > 0 ? links : defaultLinks;
