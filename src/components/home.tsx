@@ -35,11 +35,11 @@ const Home: React.FC = () => {
           </div>
           
           <div className="feature-card">
-            <div className="feature-icon">📞</div>
-            <h3>Who to Cone-tact</h3>
-            <p>Lost? Confused? Need a grown-up? We got you.</p>
-            <Link to="/contacts" className="feature-btn">
-              Find Your People →
+            <div className="feature-icon">📣</div>
+            <h3>Cone News</h3>
+            <p>Breaking news, cone-spiracies, and drama you didn't know you needed.</p>
+            <Link to="/cone-news" className="feature-btn">
+              Update Your Cone-life →
             </Link>
           </div>
         </div>

@@ -1,0 +1,27 @@
+.news-page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.news-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.news-card h3 {
+  color: #38bdf8;
+  margin-bottom: 10px;
+}
+
+.news-card p {
+  color: white;
+  margin-bottom: 10px;
+}
+
+.news-card small {
+  color: #94a3b8;
+}
