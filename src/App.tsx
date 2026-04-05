@@ -2,6 +2,7 @@ import { BrowserRouter as BrowserRouter, Route, Routes } from 'react-router-dom'
 import React from 'react';
 import NavBar from './components/navbar.tsx'
 import CQpage from './components/cq.tsx'
+import News from './components/news.tsx'
 import Home from './components/home.tsx'
 import './App.css'
 import './components/NavBar.css'
@@ -19,10 +20,9 @@ const App: React.FC = () => {
                 <Home />
               </div>
             } />
-            <Route path="/comic" element={
+            <Route path="/news" element={
               <div>
-                <h1>Comic Page</h1>
-                <p>Edit this content directly in App.jsx</p>
+                <News />
               </div>
             } />
             <Route path="/CQ" element={
@@ -30,9 +30,9 @@ const App: React.FC = () => {
                   <CQpage />
               </div>
             } />
-            <Route path="/contacts" element={
+            <Route path="/comic" element={
               <div>
-                <h1>MTL info</h1>
+                <h1>Comic Maker</h1>
                 <p>Edit this content directly in App.jsx</p>
               </div>
             } />
