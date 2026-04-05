@@ -465,7 +465,6 @@ const CQPage: React.FC = () => {
             </div>
         </div>
       )}
-
       {inputForm && (
           <div className="form-main" style={{marginTop: '10px'}}>
               <input

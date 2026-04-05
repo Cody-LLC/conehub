@@ -46,7 +46,6 @@ const News: React.FC = () => {
         </div>
       )}
     </div>
-    
   );
 };
 
