@@ -38,7 +38,7 @@ const Home: React.FC = () => {
             <div className="feature-icon">📣</div>
             <h3>Cone News</h3>
             <p>Breaking news, cone-spiracies, and drama you didn't know you needed.</p>
-            <Link to="/news" className="feature-btn">
+            <Link to="/news " className="feature-btn">
               Update Your Cone-life →
             </Link>
           </div>
