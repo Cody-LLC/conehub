@@ -1,19 +1,25 @@
-import { defineConfig } from 'vite'
+import { defineConfig, searchForWorkspaceRoot } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
 export default defineConfig({
-    plugins: [react()],
+  plugins: [react()],
   server: {
-    host: true, // Listen on all addresses
-    port: 3000, // Change if needed
+    host: true,
+    port: 3000,
+    strictPort: true,
     allowedHosts: [
       'conehub.org',
       'duty.conehub.org',
       'localhost',
       '127.0.0.1'
     ],
-    strictPort: true,
+    fs: {
+      strict: true,
+      allow: [
+        // This automatically finds your project root on ANY OS
+        searchForWorkspaceRoot(process.cwd()),
+      ]
+    }
   },
   build: {
     outDir: 'dist',
