@@ -10,7 +10,6 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 // Types
 type Team = { id: number; name: string };
 type Member = { id: number; name: string; team_id: number };
-type Assignment = { day_of_week: string; shift_index: number; member_id: number | null };
 
 const CQPage: React.FC = () => {
   // ---------- State ----------
