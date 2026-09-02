@@ -521,3 +521,52 @@ Admin Schedule
     padding: 20px;
   }
 }
+
+/* Two-slot shifts */
+.shift-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.shift-slot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  justify-content: center;
+  text-align: center;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  border: 1px solid transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.85rem;
+  transition: all 0.2s;
+  min-height: 28px;
+}
+
+.shift-slot.clickable:hover {
+  background: rgba(102, 126, 234, 0.25);
+  border-color: #667eea;
+}
+
+.slot-role {
+  font-weight: 600;
+  color: #38bdf8;
+  font-size: 0.75rem;
+  min-width: 48px;
+}
+
+.slot-name {
+  color: #f1f5f9;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.slot-name.unassigned {
+  color: #64748b;
+}

@@ -35,6 +35,7 @@ const CQPage: React.FC = () => {
   const [showMemberPicker, setShowMemberPicker] = useState(false);
   const [selectedDay, setSelectedDay] = useState<string>('');
   const [selectedShift, setSelectedShift] = useState<number>(0);
+  const [selectedSlot, setSelectedSlot] = useState<number>(1);
 
   // ---------- Load Data ----------
   useEffect(() => {
@@ -81,7 +82,7 @@ const CQPage: React.FC = () => {
     if (!team?.id) return;
     const { data, error } = await supabase
       .from('assignments')
-      .select('day_of_week, shift_index, member_id')
+      .select('day_of_week, shift_index, member_id, member_id_2')
       .eq('team_id', team.id);
     if (error) {
       console.error('Load assignments error:', error);
@@ -89,8 +90,11 @@ const CQPage: React.FC = () => {
     }
     const map: Record<string, number> = {};
     data.forEach((row) => {
-      if (row.member_id !== null) {
-        map[`${row.day_of_week}-${row.shift_index}`] = row.member_id;
+      if (row.member_id !== null && row.member_id !== undefined) {
+        map[`${row.day_of_week}-${row.shift_index}-1`] = row.member_id;
+      }
+      if (row.member_id_2 !== null && row.member_id_2 !== undefined) {
+        map[`${row.day_of_week}-${row.shift_index}-2`] = row.member_id_2;
       }
     });
     setAssignments(map);
@@ -214,37 +218,54 @@ const CQPage: React.FC = () => {
   };
 
   // ---------- Shift Assignment Functions ----------
-  const handleShiftClick = (day: string, shiftIndex: number) => {
-    const key = `${day}-${shiftIndex}`;
+  const handleShiftClick = (day: string, shiftIndex: number, slot: number) => {
+    const key = `${day}-${shiftIndex}-${slot}`;
     const currentMemberId = assignments[key] || null;
 
     if (currentMemberId) {
       // Remove assignment
       if (confirm('Remove this member from the shift?')) {
-        removeAssignment(day, shiftIndex);
+        removeAssignment(day, shiftIndex, slot);
       }
     } else {
       // Show member picker
       setSelectedDay(day);
       setSelectedShift(shiftIndex);
+      setSelectedSlot(slot);
       setShowMemberPicker(true);
     }
   };
 
-  const removeAssignment = async (day: string, shiftIndex: number) => {
+  const removeAssignment = async (day: string, shiftIndex: number, slot: number) => {
     const team = selectedTeam2 || selectedTeam;
     if (!team?.id) return;
+    const otherSlot = slot === 1 ? 2 : 1;
+    const otherMemberId = assignments[`${day}-${shiftIndex}-${otherSlot}`];
+
     try {
-      const { error } = await supabase
-        .from('assignments')
-        .delete()
-        .eq('team_id', team.id)
-        .eq('day_of_week', day)
-        .eq('shift_index', shiftIndex);
-      if (error) throw error;
+      if (!otherMemberId) {
+        // If neither slot has anyone assigned, delete the entire row
+        const { error } = await supabase
+          .from('assignments')
+          .delete()
+          .eq('team_id', team.id)
+          .eq('day_of_week', day)
+          .eq('shift_index', shiftIndex);
+        if (error) throw error;
+      } else {
+        // Only set this slot's column to null
+        const updatePayload = slot === 1 ? { member_id: null } : { member_id_2: null };
+        const { error } = await supabase
+          .from('assignments')
+          .update(updatePayload)
+          .eq('team_id', team.id)
+          .eq('day_of_week', day)
+          .eq('shift_index', shiftIndex);
+        if (error) throw error;
+      }
       // Update local state
       const newMap = { ...assignments };
-      delete newMap[`${day}-${shiftIndex}`];
+      delete newMap[`${day}-${shiftIndex}-${slot}`];
       setAssignments(newMap);
     } catch (err: any) {
       alert(`❌ Failed to remove assignment: ${err.message}`);
@@ -254,6 +275,9 @@ const CQPage: React.FC = () => {
   const assignMember = async (memberId: number) => {
     const team = selectedTeam2 || selectedTeam;
     if (!team?.id) return;
+    const otherSlot = selectedSlot === 1 ? 2 : 1;
+    const otherMemberId = assignments[`${selectedDay}-${selectedShift}-${otherSlot}`] || null;
+
     try {
       const { error } = await supabase
         .from('assignments')
@@ -262,14 +286,15 @@ const CQPage: React.FC = () => {
             team_id: team.id,
             day_of_week: selectedDay,
             shift_index: selectedShift,
-            member_id: memberId,
+            member_id: selectedSlot === 1 ? memberId : otherMemberId,
+            member_id_2: selectedSlot === 2 ? memberId : otherMemberId,
           },
           { onConflict: 'team_id, day_of_week, shift_index' }
         );
       if (error) throw error;
       setAssignments(prev => ({
         ...prev,
-        [`${selectedDay}-${selectedShift}`]: memberId,
+        [`${selectedDay}-${selectedShift}-${selectedSlot}`]: memberId,
       }));
       setShowMemberPicker(false);
     } catch (err: any) {
@@ -294,20 +319,35 @@ const CQPage: React.FC = () => {
               <div className="day-header"><h3>{day}</h3></div>
               <div className="compact-shifts">
                 {shiftIndices.map(index => {
-                  const key = `${day}-${index}`;
-                  const memberId = assignments[key] || null;
-                  const member = members.find(m => m.id === memberId);
-                  const displayName = member ? member.name : '—';
+                  const memberId1 = assignments[`${day}-${index}-1`] || null;
+                  const member1 = members.find(m => m.id === memberId1);
+                  const displayName1 = member1 ? member1.name : '—';
+
+                  const memberId2 = assignments[`${day}-${index}-2`] || null;
+                  const member2 = members.find(m => m.id === memberId2);
+                  const displayName2 = member2 ? member2.name : '—';
 
                   return (
-                    <div
-                      key={key}
-                      className={`compact-shift ${editable ? 'clickable' : ''}`}
-                      onClick={() => editable && handleShiftClick(day, index)}
-                      style={{ cursor: editable ? 'pointer' : 'default' }}
-                    >
+                    <div key={`${day}-${index}`} className="compact-shift">
                       <div className="shift-time">{shiftLabels[index]}</div>
-                      <div className="shift-assignee">{displayName}</div>
+                      <div className="shift-slots">
+                        <div
+                          className={`shift-slot ${editable ? 'clickable' : ''}`}
+                          onClick={() => editable && handleShiftClick(day, index, 1)}
+                          style={{ cursor: editable ? 'pointer' : 'default' }}
+                          title={editable ? (member1 ? 'Click to remove' : 'Click to assign') : undefined}
+                        >
+                          <span className={`slot-name ${!member1 ? 'unassigned' : ''}`}>{displayName1}</span>
+                        </div>
+                        <div
+                          className={`shift-slot ${editable ? 'clickable' : ''}`}
+                          onClick={() => editable && handleShiftClick(day, index, 2)}
+                          style={{ cursor: editable ? 'pointer' : 'default' }}
+                          title={editable ? (member2 ? 'Click to remove' : 'Click to assign') : undefined}
+                        >
+                          <span className={`slot-name ${!member2 ? 'unassigned' : ''}`}>{displayName2}</span>
+                        </div>
+                      </div>
                     </div>
                   );
                 })}
